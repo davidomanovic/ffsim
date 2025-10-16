@@ -265,45 +265,85 @@
         </div>
         <article role="main" id="furo-main-content">
           <h1>Source code for ffsim.qiskit.jordan_wigner</h1><div class="highlight"><pre>
-<span></span><span class="c1"># ffsim/qiskit/jordan_wigner.py</span>
+<span></span><span class="c1"># (C) Copyright IBM 2024.</span>
+<span class="c1">#</span>
+<span class="c1"># This code is licensed under the Apache License, Version 2.0. You may</span>
+<span class="c1"># obtain a copy of this license in the LICENSE.txt file in the root directory</span>
+<span class="c1"># of this source tree or at http://www.apache.org/licenses/LICENSE-2.0.</span>
+<span class="c1">#</span>
+<span class="c1"># Any modifications or derivative works of this code must retain this</span>
+<span class="c1"># copyright notice, and modified files need to carry a notice indicating</span>
+<span class="c1"># that they have been altered from the originals.</span>
+
+<span class="sd">&quot;&quot;&quot;Jordan-Wigner transformation.&quot;&quot;&quot;</span>
+
 <span class="kn">from</span><span class="w"> </span><span class="nn">__future__</span><span class="w"> </span><span class="kn">import</span> <span class="n">annotations</span>
+
 <span class="kn">import</span><span class="w"> </span><span class="nn">functools</span>
-<span class="kn">import</span><span class="w"> </span><span class="nn">importlib</span>
 
-<span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">qiskit.quantum_info</span><span class="w"> </span><span class="kn">import</span> <span class="n">SparsePauliOp</span><span class="p">,</span> <span class="n">PauliList</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">ffsim.operators</span><span class="w"> </span><span class="kn">import</span> <span class="n">FermionOperator</span>
-
-<span class="c1"># --- Rust-backed path ---</span>
-<span class="c1"># python/ffsim/qiskit/jordan_wigner.py</span>
-
-<span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">qiskit.quantum_info</span><span class="w"> </span><span class="kn">import</span> <span class="n">SparsePauliOp</span>
+
 <span class="kn">from</span><span class="w"> </span><span class="nn">ffsim.operators</span><span class="w"> </span><span class="kn">import</span> <span class="n">FermionOperator</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">ffsim</span><span class="w"> </span><span class="kn">import</span> <span class="n">_lib</span>
 
 <div class="viewcode-block" id="jordan_wigner">
 <a class="viewcode-back" href="../../../api/ffsim.qiskit.html#ffsim.qiskit.jordan_wigner">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">jordan_wigner</span><span class="p">(</span><span class="n">op</span><span class="p">:</span> <span class="n">FermionOperator</span><span class="p">,</span> <span class="n">norb</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">SparsePauliOp</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Fast JW transform with Rust acceleration; falls back to Python if not available.&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Jordan-Wigner transformation.</span>
+
+<span class="sd">    Transform a fermion operator to a qubit operator using the Jordan-Wigner</span>
+<span class="sd">    transformation. The Jordan-Wigner transformation maps fermionic annihilation</span>
+<span class="sd">    operators to qubits as follows:</span>
+
+<span class="sd">    .. math::</span>
+
+<span class="sd">        a_p \mapsto \frac12 (X_p + iY_p)Z_1 \cdots Z_{p-1}</span>
+
+<span class="sd">    In the transformed operator, the first ``norb`` qubits represent spin-up (alpha)</span>
+<span class="sd">    orbitals, and the latter ``norb`` qubits represent spin-down (beta) orbitals. As a</span>
+<span class="sd">    result of this convention, the qubit index that an orbital is mapped to depends on</span>
+<span class="sd">    the total number of spatial orbitals. By default, the total number of spatial</span>
+<span class="sd">    orbitals is automatically determined by the largest-index orbital present in the</span>
+<span class="sd">    operator, but you can manually specify the number using the `norb` argument.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        op: The fermion operator to transform.</span>
+<span class="sd">        norb: The total number of spatial orbitals. If not specified, it is determined</span>
+<span class="sd">            by the largest-index orbital present in the operator.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        The qubit operator as a Qiskit SparsePauliOp.</span>
+
+<span class="sd">    Raises:</span>
+<span class="sd">        ValueError: Number of spatial orbitals was negative.</span>
+<span class="sd">        ValueError: Number of spatial orbitals was fewer than the number detected in the</span>
+<span class="sd">            operator.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="n">norb</span> <span class="ow">and</span> <span class="n">norb</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+            <span class="sa">f</span><span class="s2">&quot;Number of spatial orbitals must be non-negative. Got </span><span class="si">{</span><span class="n">norb</span><span class="si">}</span><span class="s2">.&quot;</span>
+        <span class="p">)</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">op</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">SparsePauliOp</span><span class="o">.</span><span class="n">from_sparse_list</span><span class="p">(</span>
+            <span class="p">[(</span><span class="s2">&quot;&quot;</span><span class="p">,</span> <span class="p">[],</span> <span class="mf">0.0</span><span class="p">)],</span> <span class="n">num_qubits</span><span class="o">=</span><span class="mi">2</span> <span class="o">*</span> <span class="p">(</span><span class="n">norb</span> <span class="ow">or</span> <span class="mi">0</span><span class="p">)</span>
+        <span class="p">)</span>
+
+    <span class="n">norb_in_op</span> <span class="o">=</span> <span class="mi">1</span> <span class="o">+</span> <span class="nb">max</span><span class="p">(</span><span class="n">orb</span> <span class="k">for</span> <span class="n">term</span> <span class="ow">in</span> <span class="n">op</span> <span class="k">for</span> <span class="n">_</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">orb</span> <span class="ow">in</span> <span class="n">term</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">norb</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">norb</span> <span class="o">=</span> <span class="n">norb_in_op</span>
+    <span class="k">if</span> <span class="n">norb</span> <span class="o">&lt;</span> <span class="n">norb_in_op</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+            <span class="s2">&quot;Number of spatial orbitals specified is fewer than the number detected in &quot;</span>
+            <span class="sa">f</span><span class="s2">&quot;the operator. The operator has </span><span class="si">{</span><span class="n">norb_in_op</span><span class="si">}</span><span class="s2"> spatial orbitals, but &quot;</span>
+            <span class="sa">f</span><span class="s2">&quot;only </span><span class="si">{</span><span class="n">norb</span><span class="si">}</span><span class="s2"> were specified.&quot;</span>
+        <span class="p">)</span>
+
     <span class="n">items</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">op</span><span class="o">.</span><span class="n">items</span><span class="p">())</span>
-    <span class="n">x_bits</span><span class="p">,</span> <span class="n">z_bits</span><span class="p">,</span> <span class="n">coeffs</span> <span class="o">=</span> <span class="n">_lib</span><span class="o">.</span><span class="n">jw_to_symplectic</span><span class="p">(</span><span class="n">items</span><span class="p">,</span> <span class="n">norb</span><span class="p">,</span> <span class="mf">1e-12</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+    <span class="n">x_bits</span><span class="p">,</span> <span class="n">z_bits</span><span class="p">,</span> <span class="n">coeffs</span> <span class="o">=</span> <span class="n">_lib</span><span class="o">.</span><span class="n">jw_to_symplectic</span><span class="p">(</span><span class="n">items</span><span class="p">,</span> <span class="n">norb</span><span class="p">,</span> <span class="mf">1e-12</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span> <span class="c1"># (src/qiskit/jordan_wigner.rs)</span>
     <span class="n">z_bits</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ascontiguousarray</span><span class="p">(</span><span class="n">z_bits</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">bool</span><span class="p">)</span>
     <span class="n">x_bits</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ascontiguousarray</span><span class="p">(</span><span class="n">x_bits</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">bool</span><span class="p">)</span>
     <span class="n">paulis</span> <span class="o">=</span> <span class="n">PauliList</span><span class="o">.</span><span class="n">from_symplectic</span><span class="p">(</span><span class="n">z_bits</span><span class="p">,</span> <span class="n">x_bits</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">SparsePauliOp</span><span class="p">(</span><span class="n">paulis</span><span class="p">,</span> <span class="n">coeffs</span><span class="p">)</span></div>
 
-
-<span class="nd">@functools</span><span class="o">.</span><span class="n">cache</span>
-<span class="k">def</span><span class="w"> </span><span class="nf">_qubit_action</span><span class="p">(</span><span class="n">action</span><span class="p">:</span> <span class="nb">bool</span><span class="p">,</span> <span class="n">qubit</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">norb</span><span class="p">:</span> <span class="nb">int</span><span class="p">):</span>
-    <span class="n">qubits</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="n">qubit</span> <span class="o">+</span> <span class="mi">1</span><span class="p">))</span>
-    <span class="k">return</span> <span class="n">SparsePauliOp</span><span class="o">.</span><span class="n">from_sparse_list</span><span class="p">(</span>
-        <span class="p">[</span>
-            <span class="p">(</span><span class="s2">&quot;Z&quot;</span> <span class="o">*</span> <span class="n">qubit</span> <span class="o">+</span> <span class="s2">&quot;X&quot;</span><span class="p">,</span> <span class="n">qubits</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">),</span>
-            <span class="p">(</span><span class="s2">&quot;Z&quot;</span> <span class="o">*</span> <span class="n">qubit</span> <span class="o">+</span> <span class="s2">&quot;Y&quot;</span><span class="p">,</span> <span class="n">qubits</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.5</span><span class="n">j</span> <span class="k">if</span> <span class="n">action</span> <span class="k">else</span> <span class="mf">0.5</span><span class="n">j</span><span class="p">),</span>
-        <span class="p">],</span>
-        <span class="n">num_qubits</span><span class="o">=</span><span class="mi">2</span> <span class="o">*</span> <span class="n">norb</span><span class="p">,</span>
-    <span class="p">)</span>
 </pre></div>
         </article>
       </div>
