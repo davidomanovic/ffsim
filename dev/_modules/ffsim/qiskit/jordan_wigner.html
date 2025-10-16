@@ -289,6 +289,7 @@
 
 <span class="kn">from</span><span class="w"> </span><span class="nn">ffsim</span><span class="w"> </span><span class="kn">import</span> <span class="n">_lib</span>
 
+
 <div class="viewcode-block" id="jordan_wigner">
 <a class="viewcode-back" href="../../../api/ffsim.qiskit.html#ffsim.qiskit.jordan_wigner">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">jordan_wigner</span><span class="p">(</span><span class="n">op</span><span class="p">:</span> <span class="n">FermionOperator</span><span class="p">,</span> <span class="n">norb</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">SparsePauliOp</span><span class="p">:</span>
@@ -342,7 +343,9 @@
         <span class="p">)</span>
 
     <span class="n">items</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">op</span><span class="o">.</span><span class="n">items</span><span class="p">())</span>
-    <span class="n">x_bits</span><span class="p">,</span> <span class="n">z_bits</span><span class="p">,</span> <span class="n">coeffs</span> <span class="o">=</span> <span class="n">_lib</span><span class="o">.</span><span class="n">jw_to_symplectic</span><span class="p">(</span><span class="n">items</span><span class="p">,</span> <span class="n">norb</span><span class="p">,</span> <span class="mf">1e-12</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span> <span class="c1"># (src/qiskit/jordan_wigner.rs)</span>
+    <span class="n">x_bits</span><span class="p">,</span> <span class="n">z_bits</span><span class="p">,</span> <span class="n">coeffs</span> <span class="o">=</span> <span class="n">_lib</span><span class="o">.</span><span class="n">jw_to_symplectic</span><span class="p">(</span>
+        <span class="n">items</span><span class="p">,</span> <span class="n">norb</span><span class="p">,</span> <span class="mf">1e-12</span><span class="p">,</span> <span class="kc">None</span>
+    <span class="p">)</span>  <span class="c1"># (src/qiskit/jordan_wigner.rs)</span>
     <span class="n">z_bits</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ascontiguousarray</span><span class="p">(</span><span class="n">z_bits</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">bool</span><span class="p">)</span>
     <span class="n">x_bits</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ascontiguousarray</span><span class="p">(</span><span class="n">x_bits</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">bool</span><span class="p">)</span>
     <span class="n">paulis</span> <span class="o">=</span> <span class="n">PauliList</span><span class="o">.</span><span class="n">from_symplectic</span><span class="p">(</span><span class="n">z_bits</span><span class="p">,</span> <span class="n">x_bits</span><span class="p">)</span>
