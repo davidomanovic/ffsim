@@ -1,6 +1,7 @@
 from collections.abc import Iterator, MutableMapping
 
 import numpy as np
+import qiskit
 
 class FermionOperator(MutableMapping[tuple[tuple[bool, bool, int], ...], complex]):
     def __init__(
@@ -91,4 +92,4 @@ def contract_num_op_sum_spin_into_buffer(
     occupations: np.ndarray,
     out: np.ndarray,
 ) -> None: ...
-def jw_map(op: FermionOperator, norb: int) -> tuple[list[str], list[complex]]: ...
+def jw_map(op: FermionOperator, norb: int) -> "qiskit.quantum_info.SparsePauliOp": ...

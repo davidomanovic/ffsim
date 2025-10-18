@@ -85,8 +85,7 @@ def jordan_wigner(
 
         return SparsePauliOp.sum(qubit_terms).simplify()
 
-    pauli_strings, coeffs = jw_map(op, norb=norb)
-    return SparsePauliOp.from_list(list(zip(pauli_strings, coeffs)))
+    return jw_map(op, norb=norb)
 
 
 @functools.cache
