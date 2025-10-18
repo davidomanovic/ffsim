@@ -13,6 +13,7 @@ use pyo3::prelude::*;
 mod contract;
 mod fermion_operator;
 mod gates;
+mod qiskit;
 
 /// Python module exposing Rust extensions.
 #[pymodule]
@@ -49,6 +50,7 @@ fn _lib(m: &Bound<'_, PyModule>) -> PyResult<()> {
         contract::num_op_sum::contract_num_op_sum_spin_into_buffer,
         m
     )?)?;
+    m.add_function(wrap_pyfunction!(qiskit::jordan_wigner::jw_map, m)?)?;
     m.add_class::<fermion_operator::FermionOperator>()?;
     Ok(())
 }

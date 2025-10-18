@@ -16,10 +16,13 @@ import functools
 
 from qiskit.quantum_info import SparsePauliOp
 
+from ffsim._lib import jw_map
 from ffsim.operators import FermionOperator
 
 
-def jordan_wigner(op: FermionOperator, norb: int | None = None) -> SparsePauliOp:
+def jordan_wigner(
+    op: FermionOperator, norb: int | None = None, rust: bool = True
+) -> SparsePauliOp:
     r"""Jordan-Wigner transformation.
 
     Transform a fermion operator to a qubit operator using the Jordan-Wigner
@@ -68,17 +71,22 @@ def jordan_wigner(op: FermionOperator, norb: int | None = None) -> SparsePauliOp
             f"the operator. The operator has {norb_in_op} spatial orbitals, but "
             f"only {norb} were specified."
         )
+    if not rust:
+        qubit_terms = [
+            SparsePauliOp.from_sparse_list([("", [], 0.0)], num_qubits=2 * norb)
+        ]
+        for term, coeff in op.items():
+            qubit_op = SparsePauliOp.from_sparse_list(
+                [("", [], coeff)], num_qubits=2 * norb
+            )
+            for action, spin, orb in term:
+                qubit_op @= _qubit_action(action, orb + spin * norb, norb)
+            qubit_terms.append(qubit_op)
 
-    qubit_terms = [SparsePauliOp.from_sparse_list([("", [], 0.0)], num_qubits=2 * norb)]
-    for term, coeff in op.items():
-        qubit_op = SparsePauliOp.from_sparse_list(
-            [("", [], coeff)], num_qubits=2 * norb
-        )
-        for action, spin, orb in term:
-            qubit_op @= _qubit_action(action, orb + spin * norb, norb)
-        qubit_terms.append(qubit_op)
+        return SparsePauliOp.sum(qubit_terms).simplify()
 
-    return SparsePauliOp.sum(qubit_terms).simplify()
+    pauli_strings, coeffs = jw_map(op, norb=norb)
+    return SparsePauliOp.from_list(list(zip(pauli_strings, coeffs)))
 
 
 @functools.cache
