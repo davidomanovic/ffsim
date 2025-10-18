@@ -1063,11 +1063,27 @@ state.</p>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="ffsim.qiskit.jordan_wigner">
-<span class="sig-prename descclassname"><span class="pre">ffsim.qiskit.</span></span><span class="sig-name descname"><span class="pre">jordan_wigner</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">fermion_operator</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">norb</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ffsim.qiskit.jordan_wigner" title="Link to this definition">¶</a></dt>
-<dd><p>Performs the Jordan-Wigner transformation on a FermionOperator.</p>
-<p><cite>ffsim.qiskit.jordan_wigner</cite> but with the performance benefits of Rust.</p>
-<p>Returns a tuple containing a vector of Pauli strings and a vector of
-corresponding complex coefficients.</p>
+<span class="sig-prename descclassname"><span class="pre">ffsim.qiskit.</span></span><span class="sig-name descname"><span class="pre">jordan_wigner</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">op</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">norb</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rust</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ffsim/qiskit/jordan_wigner.html#jordan_wigner"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ffsim.qiskit.jordan_wigner" title="Link to this definition">¶</a></dt>
+<dd><p>Perform the Jordan-Wigner transformation on a FermionOperator.</p>
+<p>The Jordan-Wigner transformation maps fermionic operators to qubit operators.
+See <a class="reference external" href="https://en.wikipedia.org/wiki/Jordan-Wigner_transformation">Wikipedia</a>
+for details.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>op</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference internal" href="ffsim.html#ffsim.FermionOperator" title="ffsim.FermionOperator"><code class="xref py py-class docutils literal notranslate"><span class="pre">FermionOperator</span></code></a></span>) – The <cite>FermionOperator</cite> to transform.</p></li>
+<li><p><strong>norb</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code></span>) – The number of spatial orbitals.</p></li>
+<li><p><strong>copy</strong> – Whether to copy the <code class="docutils literal notranslate"><span class="pre">FermionOperator</span></code> before processing it.
+If <code class="docutils literal notranslate"><span class="pre">False</span></code>, the operator may be modified in-place.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p><span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">SparsePauliOp</span></code></span></p>
+</dd>
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>The SparsePauliOp corresponding to the given <code class="docutils literal notranslate"><span class="pre">FermionOperator</span></code>.</p>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="py function">
